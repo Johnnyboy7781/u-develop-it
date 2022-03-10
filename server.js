@@ -17,6 +17,61 @@ const db = mysql.createConnection(
     console.log('Connected to the election database.')
 )
 
+// GET all parties
+app.get('/api/parties', (req, res) => {
+    const sql = `SELECT * FROM parties`;
+    db.query(sql, (err, rows) => {
+        if (err) {
+            res.statusCode(500).json({ error: err.message });
+            return;
+        }
+        res.json({
+            message: 'success',
+            data: rows
+        })
+    })
+})
+
+// GET single party
+app.get('/api/parties/:id', (req, res) => {
+    const sql =  `SELECT * 
+            FROM parties
+            WHERE id = ?`;
+    const params = [req.params.id];
+    db.query(sql, params, (err, row) => {
+        if (err) {
+            res.statusCode(400).json({ error: err.message });
+            return;
+        }
+        res.json({
+            message: 'success',
+            data: row
+        })
+    })
+})
+
+// DELETE party
+app.delete('/api/parties/:id', (req, res) => {
+    const sql = `DELETE FROM parties
+                 WHERE id = ?`;
+    const params = [req.params.id];
+    db.query(sql, params, (err, result) => {
+        if (err) {
+            res.statusCode(400).json({ error: res.message });
+        } else if (!result.affectedRows) {
+            res.json({
+                message: 'Party not found'
+            });
+        } else {
+            res.json({
+                message: 'deleted',
+                changes: result.affectedRows,
+                id: req.params.id
+            })
+        }
+    })
+})
+
 // GET all candidates
 app.get('/api/candidates', (req, res) => {
     const sql = `SELECT candidates.*, parties.name AS party_name
